@@ -1,0 +1,50 @@
+15	ADDING GO-DADDY SSL CERTIFICATE TO APACHE, AND, REDIRECTING FROM APACHE TO TOMCAT
+•	Go to C:\Apache24\conf  and open httpd.conf
+•	Uncomment below lines
+	o	LoadModule ssl_module modules/mod_ssl.so
+	o	LoadModule socache_shmcb_module modules/mod_socache_shmcb.so
+	o	Include conf/extra/httpd-ssl.conf
+	o	LoadModule proxy_module modules/mod_proxy.so
+	o	LoadModule proxy_http_module modules/mod_proxy_http.so
+•	Now go to C:\Apache24\conf\extra   and open httpd-ssl.conf   and add below lines between “VirtualHost”
+
+
+<VirtualHost _default_:443>
+SSLEngine On
+SSLCertificateFile "C:/certificates/certificate.pem"
+SSLCertificateKeyFile "C:/certificates/privatekey.key"
+BrowserMatch ".*MSIE.*" nokeepalive ssl-unclean-shutdown downgrade-1.0 force-response-1.0
+SSLCipherSuite ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL
+ServerName 13.126.189.174
+ProxyRequests Off
+ProxyPreserveHost On
+ProxyPass / http://13.126.189.174:8080/
+ProxyPassReverse / http://13.126.189.174:8080/
+</VirtualHost>
+
+===================================================================================================================
+
+16	CONFIGURATIONS IN TOMCAT SERVER.XML   C:\apache-tomcat-9.0.27\conf
+•	Just open port 8080
+<Connector port="8080" protocol="HTTP/1.1"
+            	   connectionTimeout="20000"
+           		    scheme="https"
+            	   secure="true"
+            	   redirectPort="443" />  
+•	Browse with url http://13.126.189.174:8080
+
+=====================================================================================================================
+
+17	REDIRECTING FROM APACHE TO TOMCAT HTTPS
+
+•	Go to C:\Apache24\conf  and open httpd.conf 
+•	Uncomment below line
+ 	LoadModule rewrite_module modules/mod_rewrite.so
+•	Add below lines at the end of httpd.conf
+
+			RewriteEngine On 
+			RewriteCond %{HTTPS}  !=on 
+			RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L]
+
+•	Restart the apache service by typing “httpd “  again
+•	Now even if we searched as http://13.126.189.174 it automatically redirects to https://13.126.189.174:8080
